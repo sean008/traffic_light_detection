@@ -1,0 +1,55 @@
+@startuml TrafficLightDetector
+
+class TrafficLightDetector {
+  - rules: dict
+  + __init__(rules_path: str)
+  - _check_image_requirements(image): void
+  - _is_red_light(roi): boolean
+  + detect_red_lights(image_path: str): list
+}
+
+note right of TrafficLightDetector::__init__
+  从JSON文件加载交通灯检测规则
+end note
+
+note right of TrafficLightDetector::_check_image_requirements
+  检查图像是否满足分辨率要求
+end note
+
+note right of TrafficLightDetector::_is_red_light
+  判断ROI区域是否为红灯
+end note
+
+@enduml
+
+@startuml TrafficLightDetectorFlow
+start
+:加载规则文件;
+
+partition detect_red_lights {
+  :检查文件格式;
+  :读取图像;
+  :检查图像分辨率要求;
+  :转换到HSV色彩空间;
+  :创建红色掩码;
+  :查找轮廓;
+  
+  repeat
+    :获取边界框;
+    if (边界框大小在规则范围内?) then (yes)
+      :提取ROI;
+      if (是红灯?) then (yes)
+        :添加到红灯列表;
+      endif
+    endif
+  repeat while (还有更多轮廓 && 未超过最大红灯数量限制)
+  
+  if (需要保存标注图像?) then (yes)
+    :绘制边界框和标签;
+    :保存标注后的图像;
+  endif
+}
+
+:返回红灯位置列表;
+stop
+@enduml
